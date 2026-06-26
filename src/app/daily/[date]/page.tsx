@@ -91,38 +91,47 @@ export default async function DailyDetailPage({ params }: Props) {
           </section>
         )}
 
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold text-cyan-400 mb-3">
-            📊 趋势分析
-          </h2>
-          <div
-            className="prose-daily rounded-lg border border-slate-800 bg-slate-900/60 p-4 sm:p-5"
-            dangerouslySetInnerHTML={{
-              __html: renderMarkdown(report.trendAnalysis),
-            }}
-          />
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold text-emerald-400 mb-3">
-            💡 机会分析
-          </h2>
-          <div
-            className="prose-daily rounded-lg border border-emerald-500/10 bg-emerald-950/20 p-4 sm:p-5"
-            dangerouslySetInnerHTML={{
-              __html: renderMarkdown(report.opportunityAnalysis),
-            }}
-          />
-        </section>
-
-        <section className="pt-6 border-t border-slate-800">
-          <div
-            className="prose-daily whitespace-pre-wrap"
-            dangerouslySetInnerHTML={{
-              __html: renderMarkdown(report.content),
-            }}
-          />
-        </section>
+        {/* 日报正文（优先） */}
+        {report.content ? (
+          <section className="pt-6 border-t border-slate-800">
+            <div
+              className="prose-daily whitespace-pre-wrap"
+              dangerouslySetInnerHTML={{
+                __html: renderMarkdown(report.content),
+              }}
+            />
+          </section>
+        ) : (
+          <>
+            {/* 正文为空时 fallback */}
+            {report.trendAnalysis && (
+              <section className="mb-8">
+                <h2 className="text-lg font-semibold text-cyan-400 mb-3">
+                  📊 趋势分析
+                </h2>
+                <div
+                  className="prose-daily rounded-lg border border-slate-800 bg-slate-900/60 p-4 sm:p-5"
+                  dangerouslySetInnerHTML={{
+                    __html: renderMarkdown(report.trendAnalysis),
+                  }}
+                />
+              </section>
+            )}
+            {report.opportunityAnalysis && (
+              <section className="mb-8">
+                <h2 className="text-lg font-semibold text-emerald-400 mb-3">
+                  💡 机会分析
+                </h2>
+                <div
+                  className="prose-daily rounded-lg border border-emerald-500/10 bg-emerald-950/20 p-4 sm:p-5"
+                  dangerouslySetInnerHTML={{
+                    __html: renderMarkdown(report.opportunityAnalysis),
+                  }}
+                />
+              </section>
+            )}
+          </>
+        )}
       </article>
     </div>
   );
