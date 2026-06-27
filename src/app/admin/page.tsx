@@ -2,6 +2,7 @@
 // 后台管理 /admin — 运营状态面板
 // ============================================================
 
+import { unstable_noStore as noStore } from "next/cache";
 import { getAdminStats, getRecentFetchLogs } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ function fmtTime(iso: string | null): string {
 }
 
 export default async function AdminPage() {
+  noStore();
   const [stats, logs] = await Promise.all([
     getAdminStats(),
     getRecentFetchLogs(8),

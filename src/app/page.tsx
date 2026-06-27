@@ -2,6 +2,7 @@
 // 首页 — 全球 AI 快讯
 // ============================================================
 
+import { unstable_noStore as noStore } from "next/cache";
 import { getRecentNews, getLatestDailyReport } from "@/lib/data";
 import NewsCard from "@/components/NewsCard";
 import CategoryNav from "@/components/CategoryNav";
@@ -12,6 +13,7 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 export default async function HomePage() {
+  noStore();
   const [recentNews, latestDaily] = await Promise.all([
     getRecentNews(),
     getLatestDailyReport(),

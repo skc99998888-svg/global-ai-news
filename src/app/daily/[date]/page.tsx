@@ -2,6 +2,7 @@
 // 日报详情页 /daily/[date]
 // ============================================================
 
+import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getDailyReportByDate, getNewsById } from "@/lib/data";
@@ -45,6 +46,7 @@ type Props = {
 };
 
 export default async function DailyDetailPage({ params }: Props) {
+  noStore();
   const { date } = await params;
   const report = await getDailyReportByDate(date);
 

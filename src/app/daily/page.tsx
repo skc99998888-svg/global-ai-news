@@ -2,6 +2,7 @@
 // 日报列表页 /daily
 // ============================================================
 
+import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { getRecentDailyReports } from "@/lib/data";
 
@@ -24,6 +25,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default async function DailyListPage() {
+  noStore();
   const sortedReports = await getRecentDailyReports();
 
   return (

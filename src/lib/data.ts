@@ -3,6 +3,7 @@
 // 优先从 Supabase 读取，失败时回退到本地 Mock 数据
 // ============================================================
 
+import { unstable_noStore as noStore } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   newsItems as mockNews,
@@ -28,6 +29,7 @@ import type { NewsItem, DailyReport, Category, AdminStats, FetchLog } from "@/ty
 // ============================================================
 
 export async function getAllCategories(): Promise<Category[]> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockCategories;
 
@@ -53,6 +55,7 @@ export async function getAllCategories(): Promise<Category[]> {
 export async function getCategoryBySlug(
   slug: string
 ): Promise<Category | undefined> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockGetCategoryBySlug(slug);
 
@@ -96,6 +99,7 @@ function mapNewsItem(row: Record<string, unknown>): NewsItem {
 }
 
 export async function getAllNews(): Promise<NewsItem[]> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockNews;
 
@@ -114,6 +118,7 @@ export async function getAllNews(): Promise<NewsItem[]> {
 }
 
 export async function getRecentNews(limit?: number): Promise<NewsItem[]> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockGetRecentNews(limit);
 
@@ -139,6 +144,7 @@ export async function getRecentNews(limit?: number): Promise<NewsItem[]> {
 export async function getNewsById(
   id: string
 ): Promise<NewsItem | undefined> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockGetNewsById(id);
 
@@ -159,6 +165,7 @@ export async function getNewsById(
 export async function getNewsByCategory(
   slug: string
 ): Promise<NewsItem[]> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockGetNewsByCategory(slug);
 
@@ -179,6 +186,7 @@ export async function getNewsByCategory(
 }
 
 export async function getNewsCount(): Promise<number> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockGetNewsCount();
 
@@ -214,6 +222,7 @@ function mapDailyReport(row: Record<string, unknown>): DailyReport {
 export async function getRecentDailyReports(
   limit?: number
 ): Promise<DailyReport[]> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockGetRecentDailyReports(limit);
 
@@ -238,6 +247,7 @@ export async function getRecentDailyReports(
 export async function getDailyReportByDate(
   date: string
 ): Promise<DailyReport | undefined> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockGetDailyReportByDate(date);
 
@@ -257,6 +267,7 @@ export async function getDailyReportByDate(
 }
 
 export async function getDailyReportCount(): Promise<number> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return mockGetDailyReportCount();
 
@@ -277,6 +288,7 @@ export async function getDailyReportCount(): Promise<number> {
 // ============================================================
 
 export async function getAdminStats(): Promise<AdminStats> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) {
     return {
@@ -334,6 +346,7 @@ export async function getAdminStats(): Promise<AdminStats> {
 export async function getRecentFetchLogs(
   limit: number = 8
 ): Promise<FetchLog[]> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) return [];
 
@@ -366,6 +379,7 @@ export async function getRecentFetchLogs(
 // ============================================================
 
 export async function getLatestDailyReport(): Promise<DailyReport | undefined> {
+  noStore();
   const client = getSupabaseServerClient();
   if (!client) {
     const sorted = [...mockDailyReports].sort(

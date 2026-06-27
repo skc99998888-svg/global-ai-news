@@ -2,6 +2,7 @@
 // 分类页 /category/[slug]
 // ============================================================
 
+import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getNewsByCategory, getCategoryBySlug } from "@/lib/data";
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export default async function CategoryPage({ params }: Props) {
+  noStore();
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
 

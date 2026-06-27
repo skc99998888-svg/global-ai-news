@@ -16,9 +16,16 @@ const noStoreFetch: typeof fetch = (
   init?: RequestInit
 ) => {
   // eslint-disable-next-line
-  return fetch(input, { ...init, cache: "no-store" } as RequestInit & {
-    next?: { revalidate?: number };
-  });
+  return fetch(input, {
+    ...init,
+    cache: "no-store",
+    headers: {
+      ...(init?.headers || {}),
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+    },
+    next: { revalidate: 0 },
+  } as RequestInit & { next?: { revalidate?: number }; headers?: Record<string, string> });
 };
 
 export function getSupabaseServerClient() {

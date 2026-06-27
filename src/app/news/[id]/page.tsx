@@ -2,6 +2,7 @@
 // 新闻详情页 /news/[id]
 // ============================================================
 
+import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getNewsById } from "@/lib/data";
@@ -36,6 +37,7 @@ type Props = {
 };
 
 export default async function NewsDetailPage({ params }: Props) {
+  noStore();
   const { id } = await params;
   const news = await getNewsById(id);
 
