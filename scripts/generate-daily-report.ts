@@ -4,8 +4,7 @@
 // ============================================================
 
 import { createClient } from "@supabase/supabase-js";
-import fs from "fs";
-import path from "path";
+import { loadEnv } from "../src/lib/env";
 import { generateDailyReport } from "../src/lib/ai/generate-daily-report";
 import type { ReportInputNews } from "../src/lib/ai/generate-daily-report";
 
@@ -35,22 +34,6 @@ function parseArgs(): { date: string; limit: number } {
 // ============================================================
 // Env
 // ============================================================
-
-function loadEnv() {
-  const envPath = path.resolve(process.cwd(), ".env.local");
-  if (!fs.existsSync(envPath)) { console.error(".env.local 不存在"); process.exit(1); }
-  const content = fs.readFileSync(envPath, "utf-8");
-  for (const line of content.split("\n")) {
-    const t = line.trim();
-    if (!t || t.startsWith("#")) continue;
-    const i = t.indexOf("=");
-    if (i === -1) continue;
-    const k = t.slice(0, i).trim();
-    const v = t.slice(i + 1).trim();
-    if (k && v && !process.env[k]) process.env[k] = v;
-  }
-}
-
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

@@ -9,8 +9,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Parser from "rss-parser";
 import crypto from "crypto";
-import fs from "fs";
-import path from "path";
+import { loadEnv } from "../src/lib/env";
 import { getEnabledSources } from "../src/lib/sources";
 
 // ============================================================
@@ -53,27 +52,6 @@ function generateStableId(sourceName: string, link: string): string {
       .digest("hex")
       .slice(0, 16)
   );
-}
-
-function loadEnv() {
-  const envPath = path.resolve(process.cwd(), ".env.local");
-  if (!fs.existsSync(envPath)) {
-    console.error("❌ .env.local 文件不存在，请先创建并配置 Supabase 密钥。");
-    process.exit(1);
-  }
-
-  const content = fs.readFileSync(envPath, "utf-8");
-  for (const line of content.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eqIndex = trimmed.indexOf("=");
-    if (eqIndex === -1) continue;
-    const key = trimmed.slice(0, eqIndex).trim();
-    const value = trimmed.slice(eqIndex + 1).trim();
-    if (key && value && !process.env[key]) {
-      process.env[key] = value;
-    }
-  }
 }
 
 function getSupabaseUrl(): string {
