@@ -7,6 +7,8 @@ import Link from "next/link";
 import { getDailyReportByDate, getNewsById } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 import NewsCard from "@/components/NewsCard";
 
 function formatDate(dateStr: string): string {

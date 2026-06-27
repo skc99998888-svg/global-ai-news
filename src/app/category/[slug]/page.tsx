@@ -9,6 +9,8 @@ import NewsCard from "@/components/NewsCard";
 import CategoryNav from "@/components/CategoryNav";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 type Props = {
   params: Promise<{ slug: string }>;

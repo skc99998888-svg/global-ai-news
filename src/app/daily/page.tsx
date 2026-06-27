@@ -6,6 +6,8 @@ import Link from "next/link";
 import { getRecentDailyReports } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 function formatDate(dateStr: string): string {
   try {
