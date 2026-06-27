@@ -9,23 +9,29 @@ import { createClient } from "@supabase/supabase-js";
 
 /**
  * 自定义 fetch：强制所有 Supabase 请求跳过缓存
- * 解决线上页面持续显示旧数据的问题
+ * 使用 new Headers() 保留 Supabase SDK 原始认证头（apikey / Authorization）
  */
+type NextFetchInit = RequestInit & { next?: { revalidate?: number } };
+
 const noStoreFetch: typeof fetch = (
   input: RequestInfo | URL,
   init?: RequestInit
 ) => {
-  // eslint-disable-next-line
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "no-cache");
+  headers.set("Pragma", "no-cache");
+
+  const nextInit = init as NextFetchInit | undefined;
+
   return fetch(input, {
     ...init,
+    headers,
     cache: "no-store",
-    headers: {
-      ...(init?.headers || {}),
-      "Cache-Control": "no-cache",
-      Pragma: "no-cache",
+    next: {
+      ...(nextInit?.next ?? {}),
+      revalidate: 0,
     },
-    next: { revalidate: 0 },
-  } as RequestInit & { next?: { revalidate?: number }; headers?: Record<string, string> });
+  } as NextFetchInit);
 };
 
 export function getSupabaseServerClient() {
