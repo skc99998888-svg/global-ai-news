@@ -1,78 +1,46 @@
 // ============================================================
-// 时间格式化 — 双时间显示：原文发布时间 + 本站更新时间
+// 时间格式化 — 按新闻来源时区显示原文发布时间
 // ============================================================
 
 /** 来源时区映射 */
 const SOURCE_TZ: Record<string, { tz: string; label: string }> = {
-  "OpenAI Blog":          { tz: "America/Los_Angeles", label: "美西" },
-  "NVIDIA Blog":          { tz: "America/Los_Angeles", label: "美西" },
-  "TechCrunch AI":        { tz: "America/Los_Angeles", label: "美西" },
-  "VentureBeat AI":       { tz: "America/Los_Angeles", label: "美西" },
-  "GitHub Blog":          { tz: "America/Los_Angeles", label: "美西" },
-  "Anthropic News":       { tz: "America/Los_Angeles", label: "美西" },
-  "Google AI Blog":       { tz: "America/Los_Angeles", label: "美西" },
-  "Microsoft AI Blog":    { tz: "America/Los_Angeles", label: "美西" },
-  "MIT Technology Review":{ tz: "America/New_York",    label: "美东" },
-  "The Verge AI":         { tz: "America/New_York",    label: "美东" },
-  "Ars Technica AI":      { tz: "America/New_York",    label: "美东" },
-  "Hugging Face Blog":    { tz: "America/New_York",    label: "美东" },
+  "OpenAI Blog":          { tz: "America/Los_Angeles", label: "美国西部时间" },
+  "NVIDIA Blog":          { tz: "America/Los_Angeles", label: "美国西部时间" },
+  "TechCrunch AI":        { tz: "America/Los_Angeles", label: "美国西部时间" },
+  "VentureBeat AI":       { tz: "America/Los_Angeles", label: "美国西部时间" },
+  "GitHub Blog":          { tz: "America/Los_Angeles", label: "美国西部时间" },
+  "Anthropic News":       { tz: "America/Los_Angeles", label: "美国西部时间" },
+  "Google AI Blog":       { tz: "America/Los_Angeles", label: "美国西部时间" },
+  "Microsoft AI Blog":    { tz: "America/Los_Angeles", label: "美国西部时间" },
+  "MIT Technology Review":{ tz: "America/New_York",    label: "美国东部时间" },
+  "The Verge AI":         { tz: "America/New_York",    label: "美国东部时间" },
+  "Ars Technica AI":      { tz: "America/New_York",    label: "美国东部时间" },
+  "Hugging Face Blog":    { tz: "America/New_York",    label: "美国东部时间" },
 };
 
-const DEFAULT_TZ = { tz: "UTC", label: "UTC" };
+const DEFAULT_TZ = { tz: "UTC", label: "UTC时间" };
 
-function fmtTz(iso: string, tz: string): string {
+/**
+ * 按来源时区格式化原文发布时间
+ * 返回如 "美国西部时间：2026/6/26 18:01"，失败返回 ""
+ */
+export function formatSourceTime(publishedAt: string, sourceName: string): string {
+  if (!publishedAt) return "";
+  const tz = SOURCE_TZ[sourceName] ?? DEFAULT_TZ;
   try {
-    const d = new Date(iso);
+    const d = new Date(publishedAt);
     if (isNaN(d.getTime())) return "";
-    return new Intl.DateTimeFormat("zh-CN", {
-      timeZone: tz,
+    const formatted = new Intl.DateTimeFormat("zh-CN", {
+      timeZone: tz.tz,
+      year: "numeric",
       month: "numeric",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     }).format(d);
+    return `${tz.label}：${formatted}`;
   } catch {
     return "";
   }
-}
-
-function fmtBeijing(iso: string): string {
-  return fmtTz(iso, "Asia/Shanghai");
-}
-
-export interface NewsTimeMeta {
-  originalText: string;
-  updatedText: string;
-  combinedLines: string;
-}
-
-export function getNewsTimeMeta(n: {
-  publishedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  sourceName?: string;
-}): NewsTimeMeta {
-  const tz = SOURCE_TZ[n.sourceName || ""] ?? DEFAULT_TZ;
-
-  // 原文时间
-  let originalText = "";
-  if (n.publishedAt) {
-    const s = fmtTz(n.publishedAt, tz.tz);
-    if (s) originalText = `${s} ${tz.label}`;
-  }
-
-  // 本站更新时间：优先 updatedAt，fallback createdAt
-  let updatedText = "";
-  const siteTime = n.updatedAt || n.createdAt;
-  if (siteTime) {
-    const s = fmtBeijing(siteTime);
-    if (s) updatedText = `${s} 北京`;
-  }
-
-  // 组合显示
-  const parts = [originalText, updatedText].filter(Boolean);
-  const combinedLines = parts.join(" · ");
-
-  return { originalText, updatedText, combinedLines };
 }

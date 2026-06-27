@@ -1,11 +1,11 @@
 // ============================================================
-// 新闻卡片组件 — 双时间显示
+// 新闻卡片组件 — 按来源时区显示原文发布时间
 // ============================================================
 
 import Link from "next/link";
 import { NewsItem } from "@/types";
 import { categories } from "@/data/categories";
-import { getNewsTimeMeta } from "@/lib/time-format";
+import { formatSourceTime } from "@/lib/time-format";
 
 function getCategoryName(slug: string): string {
   const cat = categories.find((c) => c.slug === slug);
@@ -13,12 +13,7 @@ function getCategoryName(slug: string): string {
 }
 
 export default function NewsCard({ news }: { news: NewsItem }) {
-  const { combinedLines } = getNewsTimeMeta({
-    publishedAt: news.publishedAt,
-    createdAt: news.createdAt,
-    updatedAt: news.updatedAt,
-    sourceName: news.sourceName,
-  });
+  const sourceTime = formatSourceTime(news.publishedAt, news.sourceName);
 
   return (
     <Link
@@ -33,10 +28,10 @@ export default function NewsCard({ news }: { news: NewsItem }) {
           </span>
           <span className="text-slate-700">·</span>
           <span>{news.sourceName}</span>
-          {combinedLines && (
+          {sourceTime && (
             <>
               <span className="text-slate-700">·</span>
-              <span>{combinedLines}</span>
+              <span>{sourceTime}</span>
             </>
           )}
           {news.importanceScore >= 8 && (
