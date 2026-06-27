@@ -1,18 +1,14 @@
 // ============================================================
-// 临时只读诊断页 /admin/data-check
-// 对比 data.ts 函数 vs direct Supabase 查询结果
+// 临时诊断页 /admin/data-check — 三组对照
+// A. data.ts函数  B. getSupabaseServerClient直接  C. createClient直接
 // ============================================================
 
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
-  getLatestDailyReport,
-  getRecentDailyReports,
-  getDailyReportByDate,
-  getDailyReportCount,
-  getRecentFetchLogs,
-  getAdminStats,
-  getRecentNews,
+  getLatestDailyReport, getRecentDailyReports, getDailyReportByDate,
+  getDailyReportCount, getRecentFetchLogs, getAdminStats, getRecentNews,
 } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -22,132 +18,137 @@ export const fetchCache = "force-no-store";
 export default async function DataCheckPage() {
   noStore();
 
-  // ===== 环境 =====
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  let host = "(missing)";
+  let host = "?";
   try { host = new URL(supabaseUrl).hostname; } catch { /* */ }
-  const serverTime = new Date().toISOString();
 
-  // ===== data.ts 函数 =====
-  const latestDaily = await getLatestDailyReport();
-  const recentDailies = await getRecentDailyReports(10);
-  const daily20260627 = await getDailyReportByDate("2026-06-27");
-  const dailyCount = await getDailyReportCount();
-  const fetchLogs = await getRecentFetchLogs(10);
-  const adminStats = await getAdminStats();
-  const recentNews = await getRecentNews(10);
+  // ===== A. data.ts functions =====
+  const aLatest = await getLatestDailyReport();
+  const aRecent = await getRecentDailyReports(10);
+  const a0627 = await getDailyReportByDate("2026-06-27");
+  const aDailyCount = await getDailyReportCount();
+  const aLogs = await getRecentFetchLogs(10);
+  const aStats = await getAdminStats();
+  const aNews = await getRecentNews(10);
 
-  // ===== Direct Supabase =====
-  let directDailyReports: any[] = [];
-  let directDailyCount: number | null = null;
-  let directDaily0627: any = null;
-  let directFetchLogs: any[] = [];
-  let directFetchLogsCount: number | null = null;
-  let directNews: any[] = [];
+  // ===== B. getSupabaseServerClient direct =====
+  const sc = getSupabaseServerClient();
+  let bDailyReports: any[] = []; let bDailyErr = "";
+  let bDailyCount: number | null = null; let bDailyCountErr = "";
+  let bFetchLogs: any[] = []; let bFetchLogsErr = "";
+  let bFetchLogsCount: number | null = null; let bFetchLogsCountErr = "";
+  let bNews: any[] = []; let bNewsErr = "";
+
+  if (sc) {
+    const { data: d1, error: e1 } = await sc.from("daily_reports").select("id,date,title,created_at").order("date", { ascending: false }).limit(10);
+    bDailyReports = d1 || []; bDailyErr = e1?.message || "";
+    const { count: c2, error: e2 } = await sc.from("daily_reports").select("*", { count: "exact", head: true });
+    bDailyCount = c2; bDailyCountErr = e2?.message || "";
+    const { data: d3, error: e3 } = await sc.from("fetch_logs").select("task_name,status,news_count,error_count,message,created_at").order("created_at", { ascending: false }).limit(10);
+    bFetchLogs = d3 || []; bFetchLogsErr = e3?.message || "";
+    const { count: c4, error: e4 } = await sc.from("fetch_logs").select("*", { count: "exact", head: true });
+    bFetchLogsCount = c4; bFetchLogsCountErr = e4?.message || "";
+    const { data: d5, error: e5 } = await sc.from("news").select("id,title_zh,published_at,status,created_at").order("created_at", { ascending: false }).limit(10);
+    bNews = d5 || []; bNewsErr = e5?.message || "";
+  }
+
+  // ===== C. Direct createClient =====
+  let cDailyReports: any[] = []; let cDailyErr = "";
+  let cDailyCount: number | null = null; let cDailyCountErr = "";
+  let cFetchLogs: any[] = []; let cFetchLogsErr = "";
+  let cFetchLogsCount: number | null = null; let cFetchLogsCountErr = "";
+  let cNews: any[] = []; let cNewsErr = "";
 
   if (supabaseUrl && serviceKey) {
     const dc = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
-
-    const { data: d1 } = await dc.from("daily_reports").select("id,date,title,created_at,updated_at").order("date", { ascending: false }).limit(10);
-    directDailyReports = d1 || [];
-
-    const { count: c2 } = await dc.from("daily_reports").select("*", { count: "exact", head: true });
-    directDailyCount = c2;
-
-    const { data: d3 } = await dc.from("daily_reports").select("id,date,title,created_at,updated_at").eq("id", "daily-2026-06-27").single();
-    directDaily0627 = d3;
-
-    const { data: d4 } = await dc.from("fetch_logs").select("task_name,status,news_count,error_count,message,created_at").order("created_at", { ascending: false }).limit(10);
-    directFetchLogs = d4 || [];
-
-    const { count: c5 } = await dc.from("fetch_logs").select("*", { count: "exact", head: true });
-    directFetchLogsCount = c5;
-
-    const { data: d6 } = await dc.from("news").select("id,title_zh,published_at,created_at,status").order("created_at", { ascending: false }).limit(10);
-    directNews = d6 || [];
+    const { data: d1, error: e1 } = await dc.from("daily_reports").select("id,date,title,created_at").order("date", { ascending: false }).limit(10);
+    cDailyReports = d1 || []; cDailyErr = e1?.message || "";
+    const { count: c2, error: e2 } = await dc.from("daily_reports").select("*", { count: "exact", head: true });
+    cDailyCount = c2; cDailyCountErr = e2?.message || "";
+    const { data: d3, error: e3 } = await dc.from("fetch_logs").select("task_name,status,news_count,error_count,message,created_at").order("created_at", { ascending: false }).limit(10);
+    cFetchLogs = d3 || []; cFetchLogsErr = e3?.message || "";
+    const { count: c4, error: e4 } = await dc.from("fetch_logs").select("*", { count: "exact", head: true });
+    cFetchLogsCount = c4; cFetchLogsCountErr = e4?.message || "";
+    const { data: d5, error: e5 } = await dc.from("news").select("id,title_zh,published_at,status,created_at").order("created_at", { ascending: false }).limit(10);
+    cNews = d5 || []; cNewsErr = e5?.message || "";
   }
 
-  // ===== 判断 =====
-  const directHas0627 = !!directDaily0627;
-  const dataHas0627 = !!daily20260627;
-  const dataFnCount = adminStats.totalDailyReports;
-
-  let judgment = "";
-  if (!directHas0627 && !dataHas0627) {
-    judgment = "direct 和 data.ts 都看不到 daily-2026-06-27 → 数据库确实没有这条记录（可能是另一个 Supabase 实例）";
-  } else if (directHas0627 && !dataHas0627) {
-    judgment = "direct 能看到但 data.ts 看不到 → data.ts 函数逻辑有问题";
-  } else if (directHas0627 && dataHas0627) {
-    judgment = "direct 和 data.ts 都能看到 daily-2026-06-27 → 首页/列表组件展示逻辑有问题，或 Netlify 缓存了旧页面代码";
-  } else {
-    judgment = "direct 看不到但 data.ts 能看到 → data.ts 可能有额外过滤";
-  }
+  // ===== judgment =====
+  const bDailyOk = bDailyReports.some((r: any) => r.date === "2026-06-27");
+  const cDailyOk = cDailyReports.some((r: any) => r.date === "2026-06-27");
+  const aDailyOk = aRecent.some((r) => r.date === "2026-06-27");
+  let judgment = [];
+  if (!aDailyOk && bDailyOk && cDailyOk) judgment.push("A(mock) B(ok) C(ok) → data.ts函数问题");
+  if (!bDailyOk && cDailyOk) judgment.push("B(fail) C(ok) → server.ts client问题");
+  if (aDailyOk && bDailyOk && cDailyOk) judgment.push("ABC都ok → 页面渲染/缓存问题");
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 font-mono text-xs">
-      <h1 className="text-lg font-bold text-slate-100 mb-4">data-check</h1>
+    <div className="mx-auto max-w-4xl px-4 py-6 font-mono text-xs">
+      <h1 className="text-lg font-bold text-slate-100 mb-4">data-check v2</h1>
+      <div className="text-slate-400 mb-4">host={host} time={new Date().toISOString()}</div>
 
-      {/* 环境 */}
-      <section className="mb-6 p-3 rounded bg-slate-900/60 border border-slate-800">
-        <h2 className="text-slate-400 mb-1">一、环境</h2>
-        <div className="text-slate-300">host: {host}</div>
-        <div className="text-slate-300">time: {serverTime}</div>
-      </section>
-
-      {/* data.ts */}
-      <section className="mb-6 p-3 rounded bg-slate-900/60 border border-slate-800">
-        <h2 className="text-slate-400 mb-1">二、data.ts 函数</h2>
-        <div className="text-slate-300 mb-1">
-          latestDailyReport: {latestDaily ? `${latestDaily.id} | ${latestDaily.date} | ${latestDaily.title}` : "null"}
+      {/* A. data.ts */}
+      <details open className="mb-4">
+        <summary className="text-slate-200 font-bold cursor-pointer mb-2">A. data.ts 函数</summary>
+        <div className="p-3 rounded bg-slate-900/60 border border-slate-800 space-y-1">
+          <div className="text-slate-300">latestDaily: {aLatest ? `${aLatest.date} ${aLatest.title}` : "null"}</div>
+          <div className="text-slate-300">dailyByDate(06-27): {a0627 ? `✅ ${a0627.title}` : "❌"}</div>
+          <div className="text-slate-300">dailyCount: {aDailyCount}</div>
+          <div className="text-slate-300">adminStats.daily: {aStats.totalDailyReports}</div>
+          <div className="text-slate-300">adminStats.news: {aStats.totalNews}</div>
+          <div className="text-slate-400 mt-1">recentDailyReports({aRecent.length}):</div>
+          {aRecent.map((r,i)=><div key={i} className="text-slate-500 ml-2">{r.id}|{r.date}|{r.title?.slice(0,40)}</div>)}
+          <div className="text-slate-400 mt-1">fetchLogs({aLogs.length}):</div>
+          {aLogs.map((l,i)=><div key={i} className="text-slate-500 ml-2">[{l.created_at?.slice(0,19)}]{l.task_name}|{l.status}</div>)}
+          <div className="text-slate-400 mt-1">recentNews({aNews.length}):</div>
+          {aNews.map((n,i)=><div key={i} className="text-slate-500 ml-2">{n.id}|{(n.titleZh||"").slice(0,40)}</div>)}
         </div>
-        <div className="text-slate-300 mb-1">
-          dailyReportByDate(06-27): {daily20260627 ? `✅ ${daily20260627.title}` : "❌ missing"}
-        </div>
-        <div className="text-slate-300 mb-1">dailyReportCount: {dailyCount}</div>
-        <div className="text-slate-300 mb-1">adminStats.totalDailyReports: {dataFnCount}</div>
-        <div className="text-slate-400 mt-1">recentDailyReports({recentDailies.length}):</div>
-        {recentDailies.map((r, i) => (
-          <div key={i} className="text-slate-500 ml-2">{r.id} | {r.date} | {r.title?.slice(0,40)}</div>
-        ))}
-        <div className="text-slate-400 mt-1">fetchLogs({fetchLogs.length}):</div>
-        {fetchLogs.map((l, i) => (
-          <div key={i} className="text-slate-500 ml-2">[{l.created_at?.slice(0,19)}] {l.task_name} | {l.status} | {l.message?.slice(0,50)}</div>
-        ))}
-        <div className="text-slate-400 mt-1">recentNews({recentNews.length}):</div>
-        {recentNews.map((n, i) => (
-          <div key={i} className="text-slate-500 ml-2">{n.id} | {n.titleZh?.slice(0,40)} | {n.publishedAt?.slice(0,10)}</div>
-        ))}
-      </section>
+      </details>
 
-      {/* Direct */}
-      <section className="mb-6 p-3 rounded bg-slate-900/60 border border-slate-800">
-        <h2 className="text-slate-400 mb-1">三、Direct Supabase</h2>
-        <div className="text-slate-300 mb-1">
-          daily-2026-06-27: {directDaily0627 ? `✅ ${directDaily0627.title}` : "❌ missing"}
+      {/* B. serverClient */}
+      <details open className="mb-4">
+        <summary className="text-slate-200 font-bold cursor-pointer mb-2">B. serverClient 直接查询 ({sc?"created":"null"})</summary>
+        <div className="p-3 rounded bg-slate-900/60 border border-slate-800 space-y-1">
+          <div className="text-slate-300">dailyCount: {bDailyCount} {bDailyCountErr && <span className="text-red-400">err: {bDailyCountErr}</span>}</div>
+          <div className="text-slate-400 mt-1">daily_reports({bDailyReports.length}):</div>
+          {bDailyReports.map((r:any,i:number)=><div key={i} className="text-slate-500 ml-2">{r.id}|{r.date}|{(r.title||"").slice(0,40)}</div>)}
+          {bDailyErr && <div className="text-red-400">err: {bDailyErr}</div>}
+          <div className="text-slate-300 mt-1">fetchLogsCount: {bFetchLogsCount} {bFetchLogsCountErr && <span className="text-red-400">err: {bFetchLogsCountErr}</span>}</div>
+          <div className="text-slate-400 mt-1">fetch_logs({bFetchLogs.length}):</div>
+          {bFetchLogs.map((l:any,i:number)=><div key={i} className="text-slate-500 ml-2">[{l.created_at?.slice(0,19)}]{l.task_name}|{l.status}</div>)}
+          {bFetchLogsErr && <div className="text-red-400">err: {bFetchLogsErr}</div>}
+          <div className="text-slate-400 mt-1">news({bNews.length}):</div>
+          {bNews.map((n:any,i:number)=><div key={i} className="text-slate-500 ml-2">{n.id}|{(n.title_zh||"").slice(0,40)}|{n.created_at?.slice(0,19)}</div>)}
+          {bNewsErr && <div className="text-red-400">err: {bNewsErr}</div>}
         </div>
-        <div className="text-slate-300 mb-1">daily_reports count: {directDailyCount ?? "?"}</div>
-        <div className="text-slate-400 mt-1">daily_reports list({directDailyReports.length}):</div>
-        {directDailyReports.map((r, i) => (
-          <div key={i} className="text-slate-500 ml-2">{r.id} | {r.date} | {(r.title||"").slice(0,40)} | created={r.created_at?.slice(0,19)}</div>
-        ))}
-        <div className="text-slate-300 mb-1 mt-1">fetch_logs count: {directFetchLogsCount ?? "?"}</div>
-        <div className="text-slate-400 mt-1">fetch_logs list({directFetchLogs.length}):</div>
-        {directFetchLogs.map((l, i) => (
-          <div key={i} className="text-slate-500 ml-2">[{l.created_at?.slice(0,19)}] {l.task_name} | {l.status} | {(l.message||"").slice(0,50)}</div>
-        ))}
-        <div className="text-slate-400 mt-1">news list({directNews.length}):</div>
-        {directNews.map((n, i) => (
-          <div key={i} className="text-slate-500 ml-2">{n.id} | {(n.title_zh||"").slice(0,40)} | pub={n.published_at?.slice(0,10)} | status={n.status}</div>
-        ))}
-      </section>
+      </details>
 
-      {/* 判断 */}
-      <section className="p-3 rounded bg-amber-950/20 border border-amber-500/20">
-        <h2 className="text-amber-400 mb-1">四、判断</h2>
-        <div className="text-slate-300 whitespace-pre-wrap">{judgment}</div>
-        <div className="text-slate-500 mt-1">directHas0627={String(directHas0627)} dataHas0627={String(dataHas0627)} dataFnCount={dataFnCount} directDailyCount={directDailyCount}</div>
-      </section>
+      {/* C. createClient */}
+      <details open className="mb-4">
+        <summary className="text-slate-200 font-bold cursor-pointer mb-2">C. createClient 直接查询</summary>
+        <div className="p-3 rounded bg-slate-900/60 border border-slate-800 space-y-1">
+          <div className="text-slate-300">dailyCount: {cDailyCount} {cDailyCountErr && <span className="text-red-400">err: {cDailyCountErr}</span>}</div>
+          <div className="text-slate-400 mt-1">daily_reports({cDailyReports.length}):</div>
+          {cDailyReports.map((r:any,i:number)=><div key={i} className="text-slate-500 ml-2">{r.id}|{r.date}|{(r.title||"").slice(0,40)}</div>)}
+          {cDailyErr && <div className="text-red-400">err: {cDailyErr}</div>}
+          <div className="text-slate-300 mt-1">fetchLogsCount: {cFetchLogsCount} {cFetchLogsCountErr && <span className="text-red-400">err: {cFetchLogsCountErr}</span>}</div>
+          <div className="text-slate-400 mt-1">fetch_logs({cFetchLogs.length}):</div>
+          {cFetchLogs.map((l:any,i:number)=><div key={i} className="text-slate-500 ml-2">[{l.created_at?.slice(0,19)}]{l.task_name}|{l.status}</div>)}
+          {cFetchLogsErr && <div className="text-red-400">err: {cFetchLogsErr}</div>}
+          <div className="text-slate-400 mt-1">news({cNews.length}):</div>
+          {cNews.map((n:any,i:number)=><div key={i} className="text-slate-500 ml-2">{n.id}|{(n.title_zh||"").slice(0,40)}|{n.created_at?.slice(0,19)}</div>)}
+          {cNewsErr && <div className="text-red-400">err: {cNewsErr}</div>}
+        </div>
+      </details>
+
+      {/* Judgment */}
+      <div className="p-3 rounded bg-amber-950/20 border border-amber-500/20">
+        <div className="text-slate-300">B dailyOk={String(bDailyOk)} C dailyOk={String(cDailyOk)} A dailyOk={String(aDailyOk)}</div>
+        <div className="text-slate-300 mt-1">B dailyCount={bDailyCount} C dailyCount={cDailyCount} A dailyCount={aDailyCount}</div>
+        {judgment.map((j,i)=><div key={i} className="text-amber-400 mt-1">→ {j}</div>)}
+        {judgment.length===0 && <div className="text-slate-500 mt-1">无明确判断 — 参考上方数据</div>}
+      </div>
     </div>
   );
 }
