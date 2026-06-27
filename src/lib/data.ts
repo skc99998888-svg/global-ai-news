@@ -129,6 +129,7 @@ export async function getRecentNews(limit?: number): Promise<NewsItem[]> {
     .select("*")
     .eq("status", "published")
     .not("opportunity_zh", "is", null)
+    .neq("opportunity_zh", "")
     .order("published_at", { ascending: false });
 
   if (limit) query.limit(limit);
@@ -178,6 +179,7 @@ export async function getNewsByCategory(
     .eq("category", slug)
     .eq("status", "published")
     .not("opportunity_zh", "is", null)
+    .neq("opportunity_zh", "")
     .order("published_at", { ascending: false });
 
   if (error) {

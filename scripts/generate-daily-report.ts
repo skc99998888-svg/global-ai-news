@@ -66,6 +66,7 @@ async function main() {
     .select("id, title_zh, summary_zh, opportunity_zh, category, tags, importance_score, source_name")
     .eq("status", "published")
     .not("opportunity_zh", "is", null)
+    .neq("opportunity_zh", "")
     .gte("published_at", `${date}T00:00:00Z`)
     .lte("published_at", `${date}T23:59:59Z`)
     .order("importance_score", { ascending: false })
