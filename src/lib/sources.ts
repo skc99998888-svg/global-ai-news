@@ -66,7 +66,7 @@ export const rssSources: RssSource[] = [
     category: "research",
     language: "en",
     country: "US",
-    enabled: true,
+    enabled: false,
   },
   {
     name: "MIT Technology Review",
@@ -79,6 +79,26 @@ export const rssSources: RssSource[] = [
   {
     name: "The Verge AI",
     url: "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+    category: "industry",
+    language: "en",
+    country: "US",
+    enabled: true,
+  },
+
+  // ========================================
+  // ✅ 第二批新增源
+  // ========================================
+  {
+    name: "Microsoft Research Blog",
+    url: "https://www.microsoft.com/en-us/research/feed/",
+    category: "research",
+    language: "en",
+    country: "US",
+    enabled: true,
+  },
+  {
+    name: "AWS ML Blog",
+    url: "https://aws.amazon.com/blogs/machine-learning/feed/",
     category: "industry",
     language: "en",
     country: "US",
