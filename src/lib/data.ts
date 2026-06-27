@@ -163,6 +163,10 @@ export async function getNewsById(
     return mockGetNewsById(id);
   }
 
+  // 公开详情页：拒绝未 AI 处理的记录
+  const opp = (data as Record<string, unknown>).opportunity_zh as string;
+  if (!opp || opp.trim() === "") return undefined;
+
   return mapNewsItem(data);
 }
 
