@@ -1,24 +1,11 @@
 // ============================================================
-// 新闻卡片组件 — 用于列表展示
+// 新闻卡片组件 — 双时间显示
 // ============================================================
 
 import Link from "next/link";
 import { NewsItem } from "@/types";
 import { categories } from "@/data/categories";
-
-function formatDate(isoString: string): string {
-  try {
-    const date = new Date(isoString);
-    return date.toLocaleDateString("zh-CN", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return isoString;
-  }
-}
+import { getNewsTimeMeta } from "@/lib/time-format";
 
 function getCategoryName(slug: string): string {
   const cat = categories.find((c) => c.slug === slug);
@@ -26,6 +13,13 @@ function getCategoryName(slug: string): string {
 }
 
 export default function NewsCard({ news }: { news: NewsItem }) {
+  const { combinedLines } = getNewsTimeMeta({
+    publishedAt: news.publishedAt,
+    createdAt: news.createdAt,
+    updatedAt: news.updatedAt,
+    sourceName: news.sourceName,
+  });
+
   return (
     <Link
       href={`/news/${news.id}`}
@@ -39,10 +33,12 @@ export default function NewsCard({ news }: { news: NewsItem }) {
           </span>
           <span className="text-slate-700">·</span>
           <span>{news.sourceName}</span>
-          <span className="text-slate-700">·</span>
-          <time dateTime={news.publishedAt}>
-            {formatDate(news.publishedAt)}
-          </time>
+          {combinedLines && (
+            <>
+              <span className="text-slate-700">·</span>
+              <span>{combinedLines}</span>
+            </>
+          )}
           {news.importanceScore >= 8 && (
             <>
               <span className="text-slate-700">·</span>

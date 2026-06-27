@@ -17,6 +17,8 @@ export interface NewsItem {
   importanceScore: number;   // 重要性评分 1–10
   publishedAt: string;       // ISO 8601 发布时间
   originalUrl: string;       // 原文链接
+  createdAt?: string;        // 本站收录时间（Supabase created_at）
+  updatedAt?: string;        // 本站更新时间（Supabase updated_at）
 }
 
 /** 每日 AI 日报 */

@@ -95,6 +95,8 @@ function mapNewsItem(row: Record<string, unknown>): NewsItem {
     importanceScore: (row.importance_score as number) ?? 5,
     publishedAt: row.published_at as string,
     originalUrl: (row.original_url as string) ?? "",
+    createdAt: (row.created_at as string) ?? "",
+    updatedAt: (row.updated_at as string) ?? "",
   };
 }
 
