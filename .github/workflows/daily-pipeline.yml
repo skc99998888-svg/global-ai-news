@@ -44,8 +44,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
+
+      - name: Show Node.js version
+        run: node -v
 
       - name: Install dependencies
         run: npm ci
@@ -54,15 +57,20 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Set pipeline date
-        id: date
         run: |
           if [ -n "${{ github.event.inputs.date }}" ]; then
-            echo "PIPELINE_DATE=${{ github.event.inputs.date }}" >> $GITHUB_ENV
+            PIPELINE_DATE="${{ github.event.inputs.date }}"
           else
-            echo "PIPELINE_DATE=$(TZ=Asia/Shanghai date +%F)" >> $GITHUB_ENV
+            PIPELINE_DATE="$(TZ=Asia/Shanghai date +%F)"
           fi
-          echo "AI_LIMIT=${{ github.event.inputs.ai_limit || '30' }}" >> $GITHUB_ENV
-          echo "DAILY_LIMIT=${{ github.event.inputs.daily_limit || '20' }}" >> $GITHUB_ENV
+
+          AI_LIMIT="${{ github.event.inputs.ai_limit || '30' }}"
+          DAILY_LIMIT="${{ github.event.inputs.daily_limit || '20' }}"
+
+          echo "PIPELINE_DATE=$PIPELINE_DATE" >> $GITHUB_ENV
+          echo "AI_LIMIT=$AI_LIMIT" >> $GITHUB_ENV
+          echo "DAILY_LIMIT=$DAILY_LIMIT" >> $GITHUB_ENV
+
           echo "Pipeline date: $PIPELINE_DATE"
           echo "AI limit: $AI_LIMIT"
           echo "Daily limit: $DAILY_LIMIT"
