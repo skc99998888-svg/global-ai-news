@@ -10,8 +10,10 @@ import { processNewsWithAI } from "../src/lib/ai/process-news";
 
 const RSS_SOURCE_NAMES = [
   "OpenAI Blog", "NVIDIA Blog", "TechCrunch AI",
-  "VentureBeat AI", "GitHub Blog", "Ars Technica AI",
+  "VentureBeat AI", "GitHub Blog",
   "MIT Technology Review", "The Verge AI",
+  "Microsoft Research Blog", "AWS ML Blog",
+  "量子位 (QbitAI)",
 ];
 
 // ============================================================

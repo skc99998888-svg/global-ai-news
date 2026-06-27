@@ -18,6 +18,7 @@ const SOURCE_TZ: Record<string, { tz: string; label: string }> = {
   "Hugging Face Blog":       { tz: "America/New_York",    label: "美国东部时间" },
   "Microsoft Research Blog":  { tz: "America/Los_Angeles", label: "美国西部时间" },
   "AWS ML Blog":              { tz: "America/Los_Angeles", label: "美国西部时间" },
+  "量子位 (QbitAI)":          { tz: "Asia/Shanghai",          label: "北京时间" },
 };
 
 const DEFAULT_TZ = { tz: "UTC", label: "UTC时间" };
